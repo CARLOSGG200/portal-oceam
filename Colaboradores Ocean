@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ocean Palace - App Oficial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="icon" href="https://www.oceanpalace.com.br/wp-content/uploads/2022/05/cropped-favicon-32x32.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        :root { --ocean-blue: #003366; --ocean-gold: #c5a059; --ocean-light: #f8fafc; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--ocean-light); margin: 0; overflow-x: hidden; }
+        .bg-ocean { background: linear-gradient(135deg, #003366 0%, #001f3f 100%); }
+        .screen { display: none; min-height: 100vh; padding-bottom: 100px; }
+        .active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .tab-bar { position: fixed; bottom: 0; w-full; background: white; height: 70px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); z-index: 1000; width: 100%; }
+        .nav-icon { color: #94a3b8; font-size: 1.2rem; display: flex; flex-direction: column; align-items: center; border: none; background: none; }
+        .nav-active { color: var(--ocean-gold); }
+        .profile-img { width: 80px; height: 80px; object-fit: cover; border-radius: 20px; border: 2px solid var(--ocean-gold); }
+    </style>
+</head>
+<body>
+
+    <div id="screen-login" class="screen active flex items-center justify-center p-6">
+        <div class="w-full max-w-sm bg-white rounded-[30px] shadow-xl p-8 text-center border-t-4 border-[#c5a059]">
+            <img src="https://www.oceanpalace.com.br/wp-content/uploads/2022/05/logo-ocean-palace.png" class="mx-auto w-32 mb-6">
+            <div class="space-y-4">
+                <input type="text" id="userInput" placeholder="CPF" class="w-full p-4 bg-gray-50 rounded-xl outline-none border border-gray-100">
+                <input type="password" id="passInput" placeholder="Matrícula" class="w-full p-4 bg-gray-50 rounded-xl outline-none border border-gray-100">
+                <button onclick="login()" class="w-full bg-ocean text-white font-bold py-4 rounded-xl shadow-lg">ACESSAR</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-home" class="screen">
+        <header class="bg-ocean p-8 rounded-b-[40px] text-white flex justify-between items-center">
+            <div>
+                <p class="text-[10px] text-gold font-bold uppercase">Bem-vindo</p>
+                <h2 id="displayNome" class="text-xl font-bold">---</h2>
+            </div>
+            <img id="home-avatar" src="" class="w-12 h-12 rounded-xl border border-gold object-cover" onclick="changeScreen('screen-perfil')">
+        </header>
+        <main class="p-6 space-y-4 -mt-6">
+            <div onclick="changeScreen('screen-horas')" class="bg-white p-6 rounded-3xl shadow-md border-l-4 border-gold">
+                <p class="text-[10px] text-gray-400 font-bold uppercase">Banco de Horas</p>
+                <h3 id="displayHoras" class="text-3xl font-black text-slate-800">---</h3>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div onclick="changeScreen('screen-cardapio')" class="bg-white p-5 rounded-3xl shadow-sm text-center">
+                    <i class="fa-solid fa-utensils text-orange-400 mb-2"></i>
+                    <p class="text-xs font-bold">Cardápio</p>
+                </div>
+                <div onclick="changeScreen('screen-perfil')" class="bg-white p-5 rounded-3xl shadow-sm text-center">
+                    <i class="fa-solid fa-user-gear text-blue-400 mb-2"></i>
+                    <p class="text-xs font-bold">Configurar</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="screen-perfil" class="screen">
+        <div class="bg-ocean p-6 text-white flex items-center">
+            <button onclick="changeScreen('screen-home')" class="mr-4"><i class="fa-solid fa-arrow-left"></i></button>
+            <h2 class="font-bold uppercase text-sm">Meu Perfil</h2>
+        </div>
+        <div class="p-8 text-center">
+            <div class="relative inline-block mb-6">
+                <img id="perfil-avatar" src="" class="profile-img">
+                <input type="file" id="inputFoto" class="hidden" onchange="updatePhoto(this)">
+                <button onclick="document.getElementById('inputFoto').click()" class="absolute -bottom-2 -right-2 bg-gold text-white w-8 h-8 rounded-full border-2 border-white"><i class="fa-solid fa-camera text-xs"></i></button>
+            </div>
+            <div class="text-left space-y-4">
+                <input type="text" id="editNome" placeholder="Nome" class="w-full p-4 bg-white border rounded-xl">
+                <button onclick="saveProfile()" class="w-full bg-ocean text-white font-bold py-4 rounded-xl">SALVAR</button>
+            </div>
+        </div>
+    </div>
+
+    <nav id="navbar" class="tab-bar hidden">
+        <button onclick="changeScreen('screen-home')" class="nav-icon nav-active"><i class="fa-solid fa-house"></i></button>
+        <button onclick="changeScreen('screen-perfil')" class="nav-icon"><i class="fa-solid fa-user"></i></button>
+    </nav>
+
+    <script>
+        let user = JSON.parse(localStorage.getItem('ocean_user')) || { nome: "Carlos Daniel", horas: "+12:45", foto: "" };
+
+        function login() {
+            document.getElementById('navbar').classList.remove('hidden');
+            changeScreen('screen-home');
+            updateUI();
+        }
+
+        function changeScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function updateUI() {
+            document.getElementById('displayNome').innerText = user.nome;
+            document.getElementById('displayHoras').innerText = user.horas;
+            document.getElementById('editNome').value = user.nome;
+            const pic = user.foto || `https://ui-avatars.com/api/?name=${user.nome}&background=c5a059&color=fff`;
+            document.getElementById('home-avatar').src = pic;
+            document.getElementById('perfil-avatar').src = pic;
+        }
+
+        function updatePhoto(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => { user.foto = e.target.result; updateUI(); };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function saveProfile() {
+            user.nome = document.getElementById('editNome').value;
+            localStorage.setItem('ocean_user', JSON.stringify(user));
+            updateUI();
+            alert("Salvo!");
+            changeScreen('screen-home');
+        }
+    </script>
+</body>
+</html>
